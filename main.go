@@ -7,17 +7,21 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"strings"
 	"errors"
+	"time"
 )
 
-var ENQ = byte(0x05)
-var EOT = byte(0x04)
+
 var Q bool
 var L bool
 var OT string
 var response []byte
 var err error
 var check string
+var ENQ = byte(0x05)
+var EOT = byte(0x04)
+var ACK = byte(0x06)
 var CR = byte(0x0D)
+var LF = byte(0x0A)
 var ETXs = byte(0x03)
 
 
@@ -174,14 +178,77 @@ Restart:
 			fmt.Println("Envio orden")
 			conn.Write([]byte{0x05})
 			//respuesta
+			_, err = bufio.NewReader(conn).ReadString(ACK)
+			if err != nil {
+				fmt.Print(err)
+			}
 			//OT vacia
 			if check == ""{
 				//crear examen sin OT
 			} else { // OT existe
 				//query
-				data := "4L|1|N"+string(CR)+string(ETXs)
+
+				//******HEADER**********
+				data := "1H|\\^&|||LIS||||||||LIS2-A2|20170615152716"+string(CR)+string(ETXs)
 				//fmt.Println(data)
-				fmt.Println(ASTMCheckSum(data))
+				CheckSum := ASTMCheckSum(data)
+				fullData := string(STX)+data+CheckSum+string(CR)+string(LF)
+				conn.Write([]byte(fullData))
+
+				time.Sleep(1 * time.Second)
+
+				_, err := bufio.NewReader(conn).ReadString(ACK)
+				if err != nil {
+					fmt.Print(err)
+				}
+
+
+				//******PERSON**********
+				data = "2P|1|UAA-01|2129346||UAA-01^AUTOMATED^URINALYSIS||19890919|F||||||OPOS|||||||||||||||||||||"+string(CR)+string(ETXs)
+				//fmt.Println(data)
+				CheckSum = ASTMCheckSum(data)
+				fullData = string(STX)+data+CheckSum+string(CR)+string(LF)
+				conn.Write([]byte(fullData))
+
+				time.Sleep(1 * time.Second)
+
+				_, err = bufio.NewReader(conn).ReadString(ACK)
+				if err != nil {
+					fmt.Print(err)
+				}
+
+				//******ORDER**********
+				data = "3O|1|2129346||^^^GLU\\^^^RBC|R||20150319151541||||N||||||||||||||O|||||"+string(CR)+string(ETXs)
+				//fmt.Println(data)
+				CheckSum = ASTMCheckSum(data)
+				fullData = string(STX)+data+CheckSum+string(CR)+string(LF)
+				conn.Write([]byte(fullData))
+
+				time.Sleep(1 * time.Second)
+
+				_, err = bufio.NewReader(conn).ReadString(ACK)
+				if err != nil {
+					fmt.Print(err)
+				}
+
+				//******LINE END**********
+				data = "4L|1|N"+string(CR)+string(ETXs)
+				//fmt.Println(data)
+				CheckSum = ASTMCheckSum(data)
+				fullData = string(STX)+data+CheckSum+string(CR)+string(LF)
+				conn.Write([]byte(fullData))
+
+				time.Sleep(1 * time.Second)
+
+				_, err = bufio.NewReader(conn).ReadString(ACK)
+				if err != nil {
+					fmt.Print(err)
+				}
+
+
+				//******EOT**********
+				conn.Write([]byte{0x04})
+
 				//crear mensaje
 			}
 			goto NewMessage
