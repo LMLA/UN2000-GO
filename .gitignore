@@ -1,4 +1,5 @@
 .idea/
+.idea
 *.xml
 .DS_Store
 .env
