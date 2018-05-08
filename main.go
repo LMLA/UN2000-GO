@@ -391,7 +391,7 @@ func invalidMessage(conn net.Conn){
 
 func soapAlerta(numot string){
 		cli := soap.Client{
-			URL: "http://131.1.18.108:8084/4DSOAP/",
+			URL: "http://131.1.18.106:8081/4DSOAP/",
 			Namespace: hello.Namespace,
 		}
 		conn := hello.NewServiciosWebRPC(&cli)
@@ -420,7 +420,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 	}
 	if len(caseData) == 0 {
 		cli := soap.Client{
-			URL:       "http://131.1.18.108:8084/4DSOAP/",
+			URL:       "http://131.1.18.106:8081/4DSOAP/",
 			Namespace: hello.Namespace,
 		}
 		conn := hello.NewServiciosWebRPC(&cli)
@@ -439,7 +439,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 		if timesCompareFormat.After(caseDateFormat) {
 			fmt.Println("ya paso media hora")
 			cli := soap.Client{
-				URL:       "http://131.1.18.108:8084/4DSOAP/",
+				URL:       "http://131.1.18.106:8081/4DSOAP/",
 				Namespace: hello.Namespace,
 			}
 			conn := hello.NewServiciosWebRPC(&cli)
