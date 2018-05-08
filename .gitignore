@@ -2,6 +2,7 @@
 .idea
 *.xml
 .DS_Store
+*.env
 .env
-.exe
-.wsdl
+*.exe
+*.wsdl

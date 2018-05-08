@@ -197,7 +197,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	}
 
 	//******PERSON**********
-	data = "2P|1||"+p.CedulaActual+"||"+p.Apellido1 +" "+ p.Apellido2+"^"+p.Nombres+"||"+nacimiento+"|"+genero+"||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
+	data = "2P|1|"+p.Nombres+"|"+p.CedulaActual+"||"+p.Nombres+"^"+p.Apellido1 +"||"+nacimiento+"|"+genero+"||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -256,7 +256,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	}
 
 	//******PERSON**********
-	data = "2P|1||"+p.CedulaActual+"||"+p.Apellido1 +" "+ p.Apellido2+"^"+p.Nombres+"||"+nacimiento+"|"+genero+"||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
+	data = "2P|1|"+p.Nombres+"|"+p.CedulaActual+"||"+p.Nombres+"^"+p.Apellido1 +"||"+nacimiento+"|"+genero+"||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -547,7 +547,6 @@ Retry:
 					} else {
 						fmt.Println("Fin mensaje")
 						time.Sleep(1 * time.Second)
-						conn.Write([]byte{0x06})
 						break
 					}
 				}
