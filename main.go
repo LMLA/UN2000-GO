@@ -1,7 +1,7 @@
 package main
 
 import (
-	hello "github.com/soap"
+	hello "UN2000/soap"
 	"bufio"
 	"errors"
 	"fmt"
@@ -188,9 +188,8 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -202,9 +201,8 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -216,9 +214,8 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -230,9 +227,8 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -240,6 +236,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	}
 
 	//******EOT**********
+	time.Sleep(1 * time.Second)
 	conn.Write([]byte{0x04})
 }
 
@@ -250,9 +247,8 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -264,9 +260,8 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -292,9 +287,8 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -302,6 +296,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	}
 
 	//******EOT**********
+	time.Sleep(1 * time.Second)
 	conn.Write([]byte{0x04})
 }
 
@@ -340,9 +335,8 @@ func invalidMessage(conn net.Conn){
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -382,9 +376,8 @@ func invalidMessage(conn net.Conn){
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	conn.Write([]byte(fullData))
-
 	time.Sleep(1 * time.Second)
+	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
@@ -392,12 +385,13 @@ func invalidMessage(conn net.Conn){
 	}
 
 	//******EOT**********
+	time.Sleep(1 * time.Second)
 	conn.Write([]byte{0x04})
 }
 
 func soapAlerta(numot string){
 		cli := soap.Client{
-			URL: "http://131.1.18.106:8081/4DSOAP/",
+			URL: "http://131.1.18.108:8084/4DSOAP/",
 			Namespace: hello.Namespace,
 		}
 		conn := hello.NewServiciosWebRPC(&cli)
@@ -426,7 +420,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 	}
 	if len(caseData) == 0 {
 		cli := soap.Client{
-			URL:       "http://131.1.18.106:8081/4DSOAP/",
+			URL:       "http://131.1.18.108:8084/4DSOAP/",
 			Namespace: hello.Namespace,
 		}
 		conn := hello.NewServiciosWebRPC(&cli)
@@ -445,7 +439,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 		if timesCompareFormat.After(caseDateFormat) {
 			fmt.Println("ya paso media hora")
 			cli := soap.Client{
-				URL:       "http://131.1.18.106:8081/4DSOAP/",
+				URL:       "http://131.1.18.108:8084/4DSOAP/",
 				Namespace: hello.Namespace,
 			}
 			conn := hello.NewServiciosWebRPC(&cli)
@@ -516,26 +510,29 @@ Retry:
 		check = ""
 		fmt.Println("Inicio mensaje")
 		// ENQ
-		message, err := bufio.NewReader(conn).ReadBytes(ENQ)
+		message, err := bufio.NewReader(conn).ReadString(ENQ)
 		if err != nil {
 			fmt.Println("desconectado") // Manejo de errores
 			break // Sale del loop si se desconecta el cliente
 		} else {
 			fmt.Print("ENQ:\n")
+			time.Sleep(1 * time.Second)
 			conn.Write([]byte{0x06})
 			for {
 				// H Q L
-				message, err = bufio.NewReader(conn).ReadBytes('\r')
+				message, err = bufio.NewReader(conn).ReadString('\r')
 				if err != nil {
 					fmt.Println("desconectado") // Manejo de errores
 					break // Sale del loop si se desconecta el cliente
 				} else {
-					OT, Q, L, response, err = verifyQuery(string(message))
+					OT, Q, L, response, err = verifyQuery(message)
 				}
 				if err != nil {
+					time.Sleep(1 * time.Second)
 					conn.Write(response)
 					fmt.Println(err)
 				} else {
+					time.Sleep(1 * time.Second)
 					conn.Write(response)
 					fmt.Println(OT)
 					check = OT
@@ -543,12 +540,13 @@ Retry:
 
 				if L == true {
 					// EOT
-					message, err = bufio.NewReader(conn).ReadBytes(EOT)
+					message, err = bufio.NewReader(conn).ReadString(EOT)
 					if err != nil {
 						fmt.Println("desconectado") // Manejo de errores
 						break // Sale del loop si se desconecta el cliente
 					} else {
 						fmt.Println("Fin mensaje")
+						time.Sleep(1 * time.Second)
 						conn.Write([]byte{0x06})
 						break
 					}
@@ -557,9 +555,10 @@ Retry:
 			// enviar ENQ
 			fmt.Println(check)
 			fmt.Println("Envio orden")
+			time.Sleep(1 * time.Second)
 			conn.Write([]byte{0x05})
 			//respuesta
-			_, err = bufio.NewReader(conn).ReadBytes(ACK)
+			_, err = bufio.NewReader(conn).ReadString(ACK)
 			if err != nil {
 				fmt.Print(err)
 			}
