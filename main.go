@@ -177,7 +177,6 @@ func verifyQuery(message string) (OT string, Q bool, L bool, response []byte, er
 		err = errors.New(verify)
 	}
 
-
 	return OT, Q, L, response, err
 }
 
@@ -303,10 +302,10 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 func validMessage(db *sql.DB, conn net.Conn){
 	t := time.Now()
 	soapMessage := "En la orden de trabajo " + check + " se esta tratando de Programar un Examen que NO esta ACTIVO :C210 Equipo: 071\n" +
-	"No se Programaran los Examenes hasta que no se activen las Muestras.\n" +
+		"No se Programaran los Examenes hasta que no se activen las Muestras.\n" +
 		"Se deben revisar todos los Examenes que esten pendientes.\n" +
 		"Fecha y Hora: "+ t.Format("2006-01-02 15:04:05") + "\n" +
-	"Equipo: 071 SYSMEX UN-2000"
+		"Equipo: 071 SYSMEX UN-2000"
 	for _, p := range data {
 		//qu ery
 		if p.Sexo == "0" {
@@ -390,12 +389,12 @@ func invalidMessage(conn net.Conn){
 }
 
 func soapAlerta(numot string){
-		cli := soap.Client{
-			URL: "http://131.1.18.106:8081/4DSOAP/",
-			Namespace: hello.Namespace,
-		}
-		conn := hello.NewServiciosWebRPC(&cli)
-		conn.WsAlertaMuestrasInactivas(numot,"071","C210")
+	cli := soap.Client{
+		URL: "http://131.1.18.106:8081/4DSOAP/",
+		Namespace: hello.Namespace,
+	}
+	conn := hello.NewServiciosWebRPC(&cli)
+	conn.WsAlertaMuestrasInactivas(numot,"071","C210")
 }
 func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 	t := time.Now()
