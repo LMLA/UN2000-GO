@@ -187,7 +187,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
@@ -200,7 +200,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
@@ -213,7 +213,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
@@ -226,7 +226,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
@@ -235,7 +235,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	}
 
 	//******EOT**********
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte{0x04})
 }
 
@@ -246,7 +246,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
@@ -259,7 +259,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
@@ -286,7 +286,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
@@ -295,7 +295,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	}
 
 	//******EOT**********
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte{0x04})
 }
 
@@ -334,7 +334,7 @@ func invalidMessage(conn net.Conn){
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
@@ -375,7 +375,7 @@ func invalidMessage(conn net.Conn){
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte(fullData))
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
@@ -384,7 +384,7 @@ func invalidMessage(conn net.Conn){
 	}
 
 	//******EOT**********
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	conn.Write([]byte{0x04})
 }
 
@@ -515,7 +515,7 @@ Retry:
 			break // Sale del loop si se desconecta el cliente
 		} else {
 			fmt.Print("ENQ:\n")
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(300 * time.Millisecond)
 			conn.Write([]byte{0x06})
 			for {
 				// H Q L
@@ -527,11 +527,11 @@ Retry:
 					OT, Q, L, response, err = verifyQuery(message)
 				}
 				if err != nil {
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(300 * time.Millisecond)
 					conn.Write(response)
 					fmt.Println(err)
 				} else {
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(300 * time.Millisecond)
 					conn.Write(response)
 					fmt.Println(OT)
 					check = OT
@@ -545,7 +545,7 @@ Retry:
 						break // Sale del loop si se desconecta el cliente
 					} else {
 						fmt.Println("Fin mensaje")
-						time.Sleep(100 * time.Millisecond)
+						time.Sleep(300 * time.Millisecond)
 						break
 					}
 				}
@@ -553,7 +553,7 @@ Retry:
 			// enviar ENQ
 			fmt.Println(check)
 			fmt.Println("Envio orden")
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(300 * time.Millisecond)
 			conn.Write([]byte{0x05})
 			//respuesta
 			_, err = bufio.NewReader(conn).ReadString(ACK)
