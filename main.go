@@ -504,6 +504,10 @@ Retry:
 
 
 	fmt.Println(err)
+	if err != nil {
+		conn.Close()
+		goto Retry
+	}
 	// Loop infinito
 	for {
 	NewMessage:
@@ -557,14 +561,14 @@ Retry:
 			fmt.Println("Envio orden")
 			time.Sleep(300 * time.Millisecond)
 			conn.Write([]byte{0x05})
-			//respuesta
+			// respuesta
 			_, err = bufio.NewReader(conn).ReadString(ACK)
 			if err != nil {
 				fmt.Print(err)
 			}
-			//OT vacia
+			// OT vacia
 			if check == "" {
-				//crear examen sin OT
+				// crear examen sin OT
 			} else { // OT existe
 				hostQueryDB(db, check)
 				if len(data) == 0 {
