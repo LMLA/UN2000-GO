@@ -33,6 +33,7 @@ var data []*hostQueryData
 var caseData []*caseQueryData
 var genero string
 var verHoraOT string
+var soapURL string
 
 
 const (
@@ -390,7 +391,7 @@ func invalidMessage(conn net.Conn){
 
 func soapAlerta(numot string){
 	cli := soap.Client{
-		URL: "http://131.1.18.106:8081/4DSOAP/",
+		URL: soapURL,
 		Namespace: hello.Namespace,
 	}
 	conn := hello.NewServiciosWebRPC(&cli)
@@ -419,7 +420,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 	}
 	if len(caseData) == 0 {
 		cli := soap.Client{
-			URL:       "http://131.1.18.106:8081/4DSOAP/",
+			URL:       soapURL,
 			Namespace: hello.Namespace,
 		}
 		conn := hello.NewServiciosWebRPC(&cli)
@@ -438,7 +439,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 		if timesCompareFormat.After(caseDateFormat) {
 			fmt.Println("ya paso media hora")
 			cli := soap.Client{
-				URL:       "http://131.1.18.106:8081/4DSOAP/",
+				URL:      soapURL,
 				Namespace: hello.Namespace,
 			}
 			conn := hello.NewServiciosWebRPC(&cli)
@@ -464,6 +465,7 @@ func main() {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	tcpPort := os.Getenv("TCP_PORT")
+	soapURL = os.Getenv("SOAP_URL")
 
 	// String conexion MySQL
 	dbConn := dbUser + ":" + dbPassword + "@tcp(" + dbAddress + ":" + dbPort + ")/" + dbDatabase

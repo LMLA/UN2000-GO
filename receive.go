@@ -32,6 +32,7 @@ Retry:
 		fmt.Println("error tcp")
 	}
 	for {
+	NewMessage:
 		message, err := bufio.NewReader(conn).ReadString(ENQ)
 		if err != nil {
 			fmt.Println("desconectado") // Manejo de errores
@@ -46,10 +47,16 @@ Retry:
 					fmt.Println("desconectado") // Manejo de errores
 					break // Sale del loop si se desconecta el cliente
 				} else {
-					// verificar si es L
+					verify := message[2:3]
+					if verify == "L" {
+						time.Sleep(1 * time.Second)
+						conn.Write([]byte{0x06})
+						message, err = bufio.NewReader(conn).ReadString(EOT)
+						goto NewMessage
+					} // verificar si es L
 				}
-				goto Retry
 			}
 		}
 	}
+	goto Retry
 }
