@@ -472,6 +472,7 @@ func main() {
 
 	ln, _ := net.Listen("tcp", ":"+ tcpPort)
 
+	timeoutDuration := 5 * time.Second
 Retry:
 
 // Acepta condiciento en puerto indicado
@@ -515,9 +516,10 @@ Retry:
 		check = ""
 		fmt.Println("Inicio mensaje")
 		// ENQ
+		conn.SetReadDeadline(time.Now().Add(timeoutDuration))
 		message, err := bufio.NewReader(conn).ReadString(ENQ)
 		if err != nil {
-			fmt.Println("desconectado") // Manejo de errores
+			fmt.Println("timeout") // Manejo de errores
 			break // Sale del loop si se desconecta el cliente
 		} else {
 			fmt.Print("ENQ:\n")
