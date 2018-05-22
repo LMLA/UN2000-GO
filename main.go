@@ -1,7 +1,7 @@
 package main
 
 import (
-	hello "UN2000/soap"
+	hello "UN2000-GO/soap"
 	"bufio"
 	"errors"
 	"fmt"
@@ -14,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 	"os"
 	"github.com/fiorix/wsdl2go/soap"
+	"io"
 )
 
 var Q bool
@@ -472,13 +473,13 @@ func main() {
 
 	ln, _ := net.Listen("tcp", ":"+ tcpPort)
 
-	timeoutDuration := 5 * time.Second
 Retry:
 
 // Acepta condiciento en puerto indicado
 	conn, err := ln.Accept()
+	fmt.Println(conn.RemoteAddr().String())
 	if err != nil {
-		fmt.Println("error tcp")
+		fmt.Println("error tcp", err)
 	}
 
 	db, err := sql.Open("mysql", dbConn)
@@ -516,15 +517,19 @@ Retry:
 		check = ""
 		fmt.Println("Inicio mensaje")
 		// ENQ
-		conn.SetReadDeadline(time.Now().Add(timeoutDuration))
 		message, err := bufio.NewReader(conn).ReadString(ENQ)
 		if err != nil {
 			fmt.Println("timeout") // Manejo de errores
-			break // Sale del loop si se desconecta el cliente
+			if io.EOF == err {
+				fmt.Println("connection dropped message", err)
+				goto Retry
+			}
+			goto Retry // Sale del loop si se desconecta el cliente
 		} else {
 			fmt.Print("ENQ:\n")
 			time.Sleep(300 * time.Millisecond)
-			conn.Write([]byte{0x06})
+			_ , err = conn.Write([]byte{0x06})
+			fmt.Print("ACK sent: ", err)
 			for {
 				// H Q L
 				message, err = bufio.NewReader(conn).ReadString('\r')
