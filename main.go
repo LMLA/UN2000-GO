@@ -21,7 +21,6 @@ var Q bool
 var L bool
 var OT string
 var response []byte
-var err error
 var check string
 var caseDate string
 var ENQ = byte(0x05)

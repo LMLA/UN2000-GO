@@ -16,10 +16,8 @@ import (
 // variables globales
 var Lr bool
 var responser []byte
-var errr error
 var ENQr = byte(0x05)
 var EOTr = byte(0x04)
-var ACKr = byte(0x06)
 
 // funcion para subir txt al servidor ftp
 func UploadFTP(client *goftp.Client, filename string, location string) error {
