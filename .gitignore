@@ -6,3 +6,5 @@
 .env
 *.exe
 *.wsdl
+receive
+results/20180523103422.txt
