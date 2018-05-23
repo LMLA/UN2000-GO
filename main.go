@@ -577,10 +577,13 @@ Retry:
 			if check == "" {
 				// crear examen sin OT
 			} else { // OT existe
-				hostQueryDB(db, check)
+				err = hostQueryDB(db, check)
+				if err != nil {
+					fmt.Println(err)
+				}
 				if len(data) == 0 {
 					t := time.Now()
-					soapMessage := "En la orden de trabajo " + check + "se esta tratando de Realizar un Examen que NO esta PROGRAMADO: C210 Equipo: 071\n" +
+					soapMessage := "En la orden de trabajo " + check + " se esta tratando de Realizar un Examen que NO esta PROGRAMADO: C210 Equipo: 071\n" +
 						"No se Programaran los Examenes hasta que no se verifique el Examen A Practicar.\n" +
 						"Se deben revisar que la orden de trabajo tenga un examen: C210 programado.\n" +
 						"Fecha y Hora: "+ t.Format("2006-01-02 15:04:05") + "\n" +
