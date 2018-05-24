@@ -10,7 +10,7 @@ import (
 	"time"
 	"io"
 	"errors"
-	"github.com/secsy/goftp"
+	"os/exec"
 )
 
 // variables globales
@@ -20,18 +20,18 @@ var ENQr = byte(0x05)
 var EOTr = byte(0x04)
 
 // funcion para subir txt al servidor ftp
-func UploadFTP(client *goftp.Client, filename string, location string) error {
-	bigFile, err := os.Open(filename) // "result/" + filename
-	if err != nil {
-		return err
-	}
-
-	err = client.Store(location, bigFile) // "iib/071/" + filename
-	if err != nil {
-		return err
-	}
-	return nil
-}
+//func UploadFTP(client *goftp.Client, filename string, location string) error {
+//	bigFile, err := os.Open(filename) // "result/" + filename
+//	if err != nil {
+//		return err
+//	}
+//
+//	err = client.Store(location, bigFile) // "iib/071/" + filename
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}
 
 // funcion que verifica si el mensaje recibido es un fin de mensaje
 func verifyQueryReceive(message string) (L bool, response []byte, err error) {
@@ -53,15 +53,23 @@ func verifyQueryReceive(message string) (L bool, response []byte, err error) {
 // Recibe una serie de resultados en formato ASTM por cada ACK enviado luego de iniciado la comunicacion
 // almacena los resultados en cadenas de texto para ser enviadas por FTP para ser almacenadas por 4D
 func main() {
+	f, err := os.OpenFile("receive.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//defer to close when you're done with it, not because you think it's idiomatic!
+	defer f.Close()
+	//set output of logs to f
+	log.SetOutput(f)
 	fmt.Println("Cargando Servidor...")
 	// carga archivo .env con variables dinamicas
-	err := godotenv.Load(".env") // error de carga
+	err = godotenv.Load(".env") // error de carga
 	if err != nil {
 		log.Fatal("Error cargando archivo .env")
 	}
 	// archivo .env con la informacion de conexión
 	tcpPort := os.Getenv("TCP_PORT_SERVER")
-	ftpAddress := os.Getenv("FTP_ADDRESS")
+	//ftpAddress := os.Getenv("FTP_ADDRESS")
 
 
 
@@ -69,36 +77,39 @@ func main() {
 
 	ln, _ := net.Listen("tcp", ":"+ tcpPort)
 
-	// configuracion conexion FTP
-	config := goftp.Config{
-		User:               "conlab97",
-		Password:           "lab3000",
-		ConnectionsPerHost: 10,
-		Timeout:            10 * time.Second,
-		Logger:             os.Stderr,
-	}
-
+	//// configuracion conexion FTP
+	//config := goftp.Config{
+	//	User:               "conlab97",
+	//	Password:           "lab3000",
+	//	ConnectionsPerHost: 10,
+	//	Timeout:            10 * time.Second,
+	//	Logger:             os.Stderr,
+	//}
+	cmnd := exec.Command("store.exe", "arg")
+	//cmnd.Run() // and wait
+	cmnd.Start()
+	log.Println("log")
 Retry:
 
 // Acepta conexion en puerto indicado
 	conn, err := ln.Accept()
 	fmt.Println(conn.RemoteAddr().String()) // imprime ip de cliente
 	if err != nil { // error tcp
-		fmt.Println("error tcp", err)
+		log.Println("error tcp", err)
 	}
 
-	// crea instancia de conexion ftp
-	client, ftpconnerr := goftp.DialConfig(config, ftpAddress)
-	if ftpconnerr != nil { // error FTP
-		fmt.Println(ftpconnerr)
-		c := time.Tick(10 * time.Second) // Reconexion FTP
-		for now := range c {
-			fmt.Println(now)
-			goto Retry
-		}
-	}
+	//// crea instancia de conexion ftp
+	//client, ftpconnerr := goftp.DialConfig(config, ftpAddress)
+	//if ftpconnerr != nil { // error FTP
+	//	fmt.Println(ftpconnerr)
+	//	c := time.Tick(10 * time.Second) // Reconexion FTP
+	//	for now := range c {
+	//		fmt.Println(now)
+	//		goto Retry
+	//	}
+	//}
 
-	fmt.Println(err)
+	log.Println(err)
 	if err != nil {
 		conn.Close()
 		goto Retry
@@ -113,22 +124,23 @@ Retry:
 		// ENQ lectura
 		message, err := bufio.NewReader(conn).ReadString(ENQr)
 		if err != nil { // error de ENQ
-			fmt.Println("timeout") // Manejo de errores
 			if io.EOF == err { // conexion perdida
-				fmt.Println("connection dropped message", err)
+				log.Println("connection dropped message", err)
 				goto Retry
 			}
 			goto Retry // Sale del loop si se desconecta el cliente
 		} else {
 			fmt.Print("ENQ:\n")
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 			_ , err = conn.Write([]byte{0x06})
-			fmt.Print("ACK sent: ", err)
+			if err != nil {
+				log.Print("ACK sent: ", err)
+			}
 			for {
 				// H Q L
 				message, err = bufio.NewReader(conn).ReadString('\n')
 				if err != nil {
-					fmt.Println("desconectado") // Manejo de errores
+					log.Println("desconectado") // Manejo de errores
 					break // Sale del loop si se desconecta el cliente
 				} else {
 					// si el archivo no existe lo crea, si ya existe agrega texto
@@ -145,11 +157,11 @@ Retry:
 					Lr, responser, err = verifyQueryReceive(message) // funcion para verificar fin del mensaje
 				}
 				if err != nil {
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 					conn.Write(responser)
-					fmt.Println(err)
+					log.Println(err)
 				} else {
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 					conn.Write(responser)
 				}
 
@@ -157,24 +169,32 @@ Retry:
 					// EOT lectura
 					message, err = bufio.NewReader(conn).ReadString(EOTr)
 					if err != nil {
-						fmt.Println("desconectado") // Manejo de errores
+						log.Println("desconectado") // Manejo de errores
 						break // Sale del loop si se desconecta el cliente
 					} else {
 						fmt.Println("Fin mensaje")
-						time.Sleep(100 * time.Millisecond)
+						time.Sleep(10 * time.Millisecond)
+						before := "results/" + filename
+						after := "results/processed/" + filename
+						// Cambiar ubicacion del archivo
+						err := os.Rename(before, after)
+						if err != nil {
+							log.Println(err)
+						}
 						break
 					}
 				}
+
 			}
-			// funcion para enviar por ftp
-			ftpUpErr := UploadFTP(client, "results/" + filename, "iib/071/"+filename)
-			if ftpUpErr != nil {
-				fmt.Println(ftpUpErr)
-			} else {
-				// se proceso correctamente se puede eliminar
-				fmt.Println("procesado")
-				os.Remove("results/" + filename)
-			}
+			//// funcion para enviar por ftp
+			//ftpUpErr := UploadFTP(client, "results/" + filename, "iib/071/"+filename)
+			//if ftpUpErr != nil {
+			//	fmt.Println(ftpUpErr)
+			//} else {
+			//	// se proceso correctamente se puede eliminar
+			//	fmt.Println("procesado")
+			//	os.Remove("results/" + filename)
+			//}
 			goto NewMessage
 		}
 

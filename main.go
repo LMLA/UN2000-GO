@@ -68,7 +68,7 @@ func hostQueryDB(db *sql.DB, check string) (err error) {
 	// Almacenamiento query
 	rows, err := db.Query("SELECT OT.NumOT,OT.CedulaActual, PAC.Nombres, PAC.Apellido1, PAC.Apellido2, PAC.Sexo, PAC.FechaNacimiento, PAC.GrupoSanguineo, PAC.RH, EAP.CodigoExamen, EXA.COD_UNIVERSAL, EAP.URGENTE, EAP.FechaOT, EAP.HoraOT FROM Pacientes PAC, OT OT, ExamAPracticar EAP, Examenes EXA WHERE EAP.NumOT = OT.NumOT AND EAP.CodigoExamen = EXA.Codigo AND OT.CedulaActual = PAC.CedulaActual AND (OT.NumOT = ? OR OT.PendienteNumOT = ?) AND EXA.Instrumento = ?", check, check, "071")
 	if err != nil {
-		fmt.Println(err) // Manejo de errores
+		log.Println(err) // Manejo de errores
 		return err
 	}
 	for rows.Next() { // Almacena resultado del query en estructura revisado y liberado
@@ -193,7 +193,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	//******PERSON**********
@@ -206,7 +206,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	//******ORDER**********
@@ -219,7 +219,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	//******LINE END**********
@@ -232,7 +232,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	//******EOT**********
@@ -252,7 +252,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	//******PERSON**********
@@ -265,7 +265,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	////******ORDER**********
@@ -292,7 +292,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	//******EOT**********
@@ -340,7 +340,7 @@ func invalidMessage(conn net.Conn){
 
 	_, err := bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	////******PERSON**********
@@ -381,7 +381,7 @@ func invalidMessage(conn net.Conn){
 
 	_, err = bufio.NewReader(conn).ReadString(ACK)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 	}
 
 	//******EOT**********
@@ -407,7 +407,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 
 	rows, err := db.Query("SELECT Hora FROM CalidadEnServicio where Orden = ? and fecha = ? order by Hora desc LIMIT 1", check, dates)
 	if err != nil {
-		fmt.Println(err) // Manejo de errores
+		log.Println(err) // Manejo de errores
 	}
 	for rows.Next() { // Almacena resultado del query en estructura revisado y liberado
 		c := new(caseQueryData)
@@ -452,9 +452,19 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 }
 
 func main() {
+	//create your file with desired read/write permissions
+	f, err := os.OpenFile("hostquery.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//defer to close when you're done with it, not because you think it's idiomatic!
+	defer f.Close()
+	//set output of logs to f
+	log.SetOutput(f)
+	//test case
 	fmt.Println("Cargando Servidor...")
 
-	err := godotenv.Load(".env")
+	err = godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error cargando archivo .env")
 	}
@@ -478,15 +488,15 @@ Retry:
 	conn, err := ln.Accept()
 	fmt.Println(conn.RemoteAddr().String())
 	if err != nil {
-		fmt.Println("error tcp", err)
+		log.Println("error tcp", err)
 	}
 
 	db, err := sql.Open("mysql", dbConn)
 	if err != nil {
-		fmt.Println("error db") // Manejo de errores
+		log.Println("error db") // Manejo de errores
 		c := time.Tick(10 * time.Second) // Reconexion TCP
 		for now := range c {
-			fmt.Println(now)
+			log.Println(now)
 			goto Retry
 		}
 	}
@@ -495,16 +505,16 @@ Retry:
 
 	// Open no abre una conexion. Validar datos DSN:
 	if err := db.Ping(); err != nil {
-		fmt.Println("error db") // mensaje error
+		log.Println("error db", err) // mensaje error
 		c := time.Tick(10 * time.Second) // Reconexion TCP
 		for now := range c {
-			fmt.Println(now)
+			log.Println(now)
 			goto Retry
 		}
 	}
 
 
-	fmt.Println(err)
+	log.Println(err)
 	if err != nil {
 		conn.Close()
 		goto Retry
@@ -518,9 +528,9 @@ Retry:
 		// ENQ
 		message, err := bufio.NewReader(conn).ReadString(ENQ)
 		if err != nil {
-			fmt.Println("timeout") // Manejo de errores
+			log.Println("timeout") // Manejo de errores
 			if io.EOF == err {
-				fmt.Println("connection dropped message", err)
+				log.Println("connection dropped message", err)
 				goto Retry
 			}
 			goto Retry // Sale del loop si se desconecta el cliente
@@ -533,7 +543,7 @@ Retry:
 				// H Q L
 				message, err = bufio.NewReader(conn).ReadString('\r')
 				if err != nil {
-					fmt.Println("desconectado") // Manejo de errores
+					log.Println("desconectado") // Manejo de errores
 					break // Sale del loop si se desconecta el cliente
 				} else {
 					OT, Q, L, response, err = verifyQuery(message)
@@ -541,7 +551,7 @@ Retry:
 				if err != nil {
 					time.Sleep(300 * time.Millisecond)
 					conn.Write(response)
-					fmt.Println(err)
+					log.Println(err)
 				} else {
 					time.Sleep(300 * time.Millisecond)
 					conn.Write(response)
@@ -553,7 +563,7 @@ Retry:
 					// EOT
 					message, err = bufio.NewReader(conn).ReadString(EOT)
 					if err != nil {
-						fmt.Println("desconectado") // Manejo de errores
+						log.Println("desconectado") // Manejo de errores
 						break // Sale del loop si se desconecta el cliente
 					} else {
 						fmt.Println("Fin mensaje")
@@ -570,7 +580,7 @@ Retry:
 			// respuesta
 			_, err = bufio.NewReader(conn).ReadString(ACK)
 			if err != nil {
-				fmt.Print(err)
+				log.Print(err)
 			}
 			// OT vacia
 			if check == "" {
@@ -578,7 +588,7 @@ Retry:
 			} else { // OT existe
 				err = hostQueryDB(db, check)
 				if err != nil {
-					fmt.Println(err)
+					log.Println(err)
 				}
 				if len(data) == 0 {
 					t := time.Now()
