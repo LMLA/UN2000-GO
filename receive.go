@@ -10,7 +10,6 @@ import (
 	"time"
 	"io"
 	"errors"
-	"os/exec"
 )
 
 // variables globales
@@ -85,10 +84,6 @@ func main() {
 	//	Timeout:            10 * time.Second,
 	//	Logger:             os.Stderr,
 	//}
-	cmnd := exec.Command("store.exe", "arg")
-	//cmnd.Run() // and wait
-	cmnd.Start()
-	log.Println("log")
 Retry:
 
 // Acepta conexion en puerto indicado
