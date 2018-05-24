@@ -42,7 +42,7 @@ El comportamiento de la interfaz comprende 3 partes:
 
 ### Recepción 
 
-El sistema UN-2000 envía una serie de resultados de las pruebas realizadas a las muestras de orina (UF y Chemistry) cuando se hace un envió al HOST se comunica usando protocolo TCP/IP al puerto 10001 al equipo principal donde está ubicado la interfaz de comunicación creada en IIB, el equipo se comunica usando el estándar ASTM el cual envía tramas al HOST indicando información del usuario, orden y resultados, están información es almacenada en cadenas de texto
+El sistema UN-2000 envía una serie de resultados de las pruebas realizadas a las muestras de orina (UF y Chemistry) cuando se hace un envió al HOST se comunica usando protocolo TCP/IP al puerto 10001 al equipo principal donde está ubicado la interfaz de comunicación creada en GO, el equipo se comunica usando el estándar ASTM el cual envía tramas al HOST indicando información del usuario, orden y resultados, están información es almacenada en cadenas de texto
 
 ### Almacenamiento
 
