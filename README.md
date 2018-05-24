@@ -115,7 +115,7 @@ env GOOS=<OS> GOARCH=<arquitectura> go <archivo go>
 
 **3. El equipo UN-2000 muestra alerta roja en la casilla HOST.**
 
-* *Este error indica problemas de comunicación con la interfaz del equipo, verificar si hay conexión a la ip del servidor de la interfaz, esta prueba se puede realizar haciendo ping a la direccion IP del servidor de la interfaz, se puede verificar la IP desde Vsphere en el equipo **ubuntu** en el **cluster por definir**, se puede verificar la credenciales de acceso en el documento networking en google drive.*
+* *Este error indica problemas de comunicación con la interfaz del equipo, verificar si hay conexión a la ip del servidor de la interfaz, esta prueba se puede realizar haciendo ping a la direccion IP del servidor de la interfaz, se puede verificar la IP desde Vsphere en el equipo **interfaces-go** en el cluster **PURE_MDE**, se puede verificar la credenciales de acceso en el documento networking en google drive.*
 
 * *El debug se realiza sobre el codigo sin compilar, no sobre el binario.*
 
@@ -124,7 +124,7 @@ env GOOS=<OS> GOARCH=<arquitectura> go <archivo go>
 
 **4. El equipo servidor no es accesible.**
 
-* *Realizar un reinicio del equipo desde la plataforma Vsphere. Se realiza de la siguiente manera, ingresar a la dirección https://vcenter.mde.lmla.co/vsphere-client/?csp seleccionar el equipo **ubuntu**  ubicado en **MDE** en el **cluster pendiebte** (se puede verificar la credenciales de acceso en el documento networking en google drive), para reiniciar el equipo seleccionar la opción **all actions** > **power** > **reset** en la parte superior de la pantalla de administración*
+* *Realizar un reinicio del equipo desde la plataforma Vsphere. Se realiza de la siguiente manera, ingresar a la dirección https://vcenter.mde.lmla.co/vsphere-client/?csp seleccionar el equipo **interfaces-go**  ubicado en **MDE** en el **cluster PURE_MDE** (se puede verificar la credenciales de acceso en el documento networking en google drive), para reiniciar el equipo seleccionar la opción **all actions** > **power** > **reset** en la parte superior de la pantalla de administración*
 
 **5. Como bajar y levantar la interfaz.**
 
