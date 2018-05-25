@@ -15,25 +15,28 @@ El equipo UD-10 realiza captura de imágenes de las partículas en las muestras,
 La informacion de configuracion se agrega en un archivo .env de la siguiente manera:
 
 ```
-DB_DATABASE : <nombre base de datos>
-DB_ADDRESS  : <IP base de datos sin puerto>
-DB_PORT     : <puerto base de datos>
-DB_USER     : <usuario base de datos>
-DB_PASSWORD : <contraseña base de datos>
-TCP_ADDRESS : <direccion servidor TCP remoto sin puerto>
-TCP_PORT    : <puerto servidor TCP host query>
-TCP_PORT_SERVER : <puerto servidor TCP resultadps>
-FTP_ADDRESS : <direccion IP FTP>
-SOAP_URL    : <url servicio SOAP>
-FTP_PATH    : <ruta FTP>
-FTP_USER    : <usuario FTP>
-FTP_PASSWORD : <contraseña FTP>
+DB_ADDRESS  : 131.1.18.106
+DB_DATABASE : 4dlab
+DB_PORT     : 3306
+DB_USER     : 4duser
+DB_PASSWORD : LavAmerikx09
+TCP_ADDRESS : localhost
+TCP_PORT    : 10002
+TCP_PORT_SERVER : 10001
+FTP_ADDRESS : 131.1.18.12
+SOAP_URL    : http://131.1.18.106:8081/4DSOAP
+FTP_PATH    : iib/071/
+FTP_USER    : conlab97
+FTP_PASSWORD : lab3000
 ```
   
 ## Instalación
 
 1. Configurar archivo .env.
 2. Correr binario.
+```
+nohup store.go &
+```
 
 ## Interfaz
 
@@ -101,7 +104,7 @@ La interfaz puede correr en entornos windows, mac o linux por medio de un binari
 
 *Para compilar se usa el siguiente código:*
 ```
-env GOOS=<OS> GOARCH=<arquitectura> go <archivo go>
+env GOOS=linux GOARCH=amd64 go store.go
 ```
 *Mas información en este [enlace](https://www.digitalocean.com/community/tutorials/how-to-build-go-executables-for-multiple-platforms-on-ubuntu-16-04).*
 
@@ -130,7 +133,7 @@ env GOOS=<OS> GOARCH=<arquitectura> go <archivo go>
 
 * *Se usa el comando*
 ```
-ps aux | grep -i ./<binario>
+ps aux | grep -i ./store
 ```
 
 * *Se verifica el PID del primer proceso que se esta ejecutando, obviar el segundo resultado*
@@ -142,7 +145,7 @@ kill -9 <PID>
 **6. Verificar que la interfaz este activa.**
 * *Se usa el comando*
 ```
-ps aux | grep -i ./<binario>
+ps aux | grep -i ./store
 ```
 
 # TRAMA ASTM UN-2000
