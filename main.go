@@ -1,7 +1,7 @@
 package main
 
 import (
-	hello "UN2000-GO/soap"
+	hello "./soap"
 	"bufio"
 	"errors"
 	"fmt"
@@ -66,7 +66,7 @@ type caseQueryData struct {
 func hostQueryDB(db *sql.DB, check string) (err error) {
 
 	// Almacenamiento query
-	rows, err := db.Query("SELECT OT.NumOT,OT.CedulaActual, PAC.Nombres, PAC.Apellido1, PAC.Apellido2, PAC.Sexo, PAC.FechaNacimiento, PAC.GrupoSanguineo, PAC.RH, EAP.CodigoExamen, EXA.COD_UNIVERSAL, EAP.URGENTE, EAP.FechaOT, EAP.HoraOT FROM Pacientes PAC, OT OT, ExamAPracticar EAP, Examenes EXA WHERE EAP.NumOT = OT.NumOT AND EAP.CodigoExamen = EXA.Codigo AND OT.CedulaActual = PAC.CedulaActual AND (OT.NumOT = ? OR OT.PendienteNumOT = ?) AND EXA.Instrumento = ?", check, check, "071")
+	rows, err := db.Query("SELECT EAP.NumOT,EAP.CedulaActual, PAC.Nombres, PAC.Apellido1, PAC.Apellido2, PAC.Sexo, PAC.FechaNacimiento, PAC.GrupoSanguineo, PAC.RH, EAP.CodigoExamen, EXA.COD_UNIVERSAL, EAP.URGENTE, EAP.FechaOT, EAP.HoraOT FROM Pacientes PAC, ExamAPracticar EAP, Examenes EXA WHERE EAP.NumOT = ? AND EAP.CedulaActual = PAC.CedulaActual AND EAP.CodigoExamen = EXA.Codigo AND EXA.Instrumento = ?" , check, "071")
 	if err != nil {
 		log.Println(err) // Manejo de errores
 		return err
@@ -167,6 +167,12 @@ func verifyQuery(message string) (OT string, Q bool, L bool, response []byte, er
 	} else if verify == "L" {
 		L = true
 	}
+
+	// Convert string to a rune and grab the num of chars we need
+	if len(OT)>7 {
+		OT = string([]rune(OT)[0:7])
+	}
+
 
 	if OT != "" && Q == true {
 		response = []byte{0x06}
