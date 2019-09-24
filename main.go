@@ -1,27 +1,30 @@
 package main
 
 import (
-	hello "./soap"
 	"bufio"
+	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
+	"io"
+	"log"
 	"net"
+	"os"
 	"strings"
 	"time"
-	"database/sql"
-	"log"
-	"github.com/joho/godotenv"
-	"os"
+
+	hello "./soap"
 	"github.com/fiorix/wsdl2go/soap"
-	"io"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 var Q bool
 var L bool
 var OT string
 var response []byte
-var check string
+
+// var check string
+var check = "NC219C2"
 var caseDate string
 var ENQ = byte(0x05)
 var EOT = byte(0x04)
@@ -35,7 +38,6 @@ var genero string
 var verHoraOT string
 var soapURL string
 
-
 const (
 	ETX = 0x03
 	ETB = 23
@@ -43,37 +45,40 @@ const (
 )
 
 type hostQueryData struct {
-	NumOT string
-	CedulaActual string
-	Nombres string
-	Apellido1 string
-	Apellido2 string
-	Sexo string
+	NumOT           string
+	CedulaActual    string
+	Nombres         string
+	Apellido1       string
+	Apellido2       string
+	Sexo            string
 	FechaNacimiento string
-	GrupoSanguineo string
-	RH string
-	CodigoExamen string
-	CODUNIVERSAL string
-	URGENTE string
-	FechaOT string
-	HoraOT string
+	GrupoSanguineo  string
+	RH              string
+	CodigoExamen    string
+	CODUNIVERSAL    string
+	URGENTE         string
+	FechaOT         string
+	HoraOT          string
+}
+
+type Orden struct {
+	NumOT          string `json:"NumOT"`
+	PendienteNumOT string `json:"PendienteNumOT"`
 }
 
 type caseQueryData struct {
 	hora string
 }
 
-func hostQueryDB(db *sql.DB, check string) (err error) {
-
-	// Almacenamiento query
-	rows, err := db.Query("SELECT EAP.NumOT,EAP.CedulaActual, PAC.Nombres, PAC.Apellido1, PAC.Apellido2, PAC.Sexo, PAC.FechaNacimiento, PAC.GrupoSanguineo, PAC.RH, EAP.CodigoExamen, EXA.COD_UNIVERSAL, EAP.URGENTE, EAP.FechaOT, EAP.HoraOT FROM Pacientes PAC, ExamAPracticar EAP, Examenes EXA WHERE EAP.NumOT = ? AND EAP.CedulaActual = PAC.CedulaActual AND EAP.CodigoExamen = EXA.Codigo AND EXA.Instrumento = ?" , check, "071")
+func hostQueryDB(db *sql.DB, check string) (p *hostQueryData, err error) {
+	rows, err := db.Query("SELECT EAP.NumOT,EAP.CedulaActual, PAC.Nombres, PAC.Apellido1, PAC.Apellido2, PAC.Sexo, PAC.FechaNacimiento, PAC.GrupoSanguineo, PAC.RH, EAP.CodigoExamen, EXA.COD_UNIVERSAL, EAP.URGENTE, EAP.FechaOT, EAP.HoraOT FROM Pacientes PAC, ExamAPracticar EAP, Examenes EXA WHERE EAP.NumOT = ? AND EAP.CedulaActual = PAC.CedulaActual AND EAP.CodigoExamen = EXA.Codigo AND EXA.Instrumento = '071'", check)
 	if err != nil {
 		log.Println(err) // Manejo de errores
-		return err
+		return nil, err
 	}
-	for rows.Next() { // Almacena resultado del query en estructura revisado y liberado
-		p := new(hostQueryData)
-		err := rows.Scan(
+	for rows.Next() {
+		p = new(hostQueryData)
+		err = rows.Scan(
 			&p.NumOT,
 			&p.CedulaActual,
 			&p.Nombres,
@@ -88,15 +93,14 @@ func hostQueryDB(db *sql.DB, check string) (err error) {
 			&p.URGENTE,
 			&p.FechaOT,
 			&p.HoraOT)
-		data = append(data, p)
+
 		if err != nil {
-			log.Fatal(err) // Manejo de errores
-			return err
+			log.Println(err) // Manejo de errores
+			return nil, err
 		}
+
 	}
-
-
-	return err
+	return p, nil
 }
 
 func ASTMCheckSum(frame string) string {
@@ -123,19 +127,19 @@ func ASTMCheckSum(frame string) string {
 
 // Estructura a revisar
 type InquiryRecord struct {
-	RecordType string
-	SequenceNumber string
-	StartingRangeIDNumber string
-	EndingRangeIDNumber string
-	UniversalTestID string
-	RangeofRequestTimeLimits string
-	StartingDateTimeofResultsRequest string
-	EndingDateTimeofResultsRequest string
-	RequestingPhysicianName string
+	RecordType                         string
+	SequenceNumber                     string
+	StartingRangeIDNumber              string
+	EndingRangeIDNumber                string
+	UniversalTestID                    string
+	RangeofRequestTimeLimits           string
+	StartingDateTimeofResultsRequest   string
+	EndingDateTimeofResultsRequest     string
+	RequestingPhysicianName            string
 	RequestingPhysicianTelephoneNumber string
-	UserFieldNo1 string
-	UserFieldNo2 string
-	RequestedInformationStatusCodes string
+	UserFieldNo1                       string
+	UserFieldNo2                       string
+	RequestedInformationStatusCodes    string
 }
 
 func verifyQuery(message string) (OT string, Q bool, L bool, response []byte, err error) {
@@ -169,10 +173,9 @@ func verifyQuery(message string) (OT string, Q bool, L bool, response []byte, er
 	}
 
 	// Convert string to a rune and grab the num of chars we need
-	if len(OT)>7 {
+	if len(OT) > 7 {
 		OT = string([]rune(OT)[0:7])
 	}
-
 
 	if OT != "" && Q == true {
 		response = []byte{0x06}
@@ -187,10 +190,10 @@ func verifyQuery(message string) (OT string, Q bool, L bool, response []byte, er
 	return OT, Q, L, response, err
 }
 
-func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT string, horaOT string){
+func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT string, horaOT string) {
 	t := time.Now()
 	//******HEADER**********
-	data := "1H|\\^&|||LIS||||||||LIS2-A2|"+ t.Format("20060102150405")+ string(CR) + string(ETXs)
+	data := "1H|\\^&|||LIS||||||||LIS2-A2|" + t.Format("20060102150405") + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -203,7 +206,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	}
 
 	//******PERSON**********
-	data = "2P|1|"+p.Nombres+"|"+p.CedulaActual+"||"+p.Nombres+"^"+p.Apellido1 +"||"+nacimiento+"|"+genero+"||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
+	data = "2P|1|" + p.Nombres + "|" + p.CedulaActual + "||" + p.Nombres + "^" + p.Apellido1 + "||" + nacimiento + "|" + genero + "||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -216,7 +219,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 	}
 
 	//******ORDER**********
-	data = "3O|1|"+p.NumOT+"||^^^GLU\\^^^RBC|R||"+fechaOT+horaOT+"||||N||||||||||||||O|||||" + string(CR) + string(ETXs)
+	data = "3O|1|" + p.NumOT + "||^^^GLU\\^^^RBC|R||" + fechaOT + horaOT + "||||N||||||||||||||O|||||" + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -249,7 +252,7 @@ func activeSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT st
 func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT string, horaOT string) {
 	t := time.Now()
 	//******HEADER**********
-	data := "1H|\\^&|||LIS||||||||LIS2-A2|"+ t.Format("20060102150405")+ string(CR) + string(ETXs)
+	data := "1H|\\^&|||LIS||||||||LIS2-A2|" + t.Format("20060102150405") + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -262,7 +265,7 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	}
 
 	//******PERSON**********
-	data = "2P|1|"+p.Nombres+"|"+p.CedulaActual+"||"+p.Nombres+"^"+p.Apellido1 +"||"+nacimiento+"|"+genero+"||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
+	data = "2P|1|" + p.Nombres + "|" + p.CedulaActual + "||" + p.Nombres + "^" + p.Apellido1 + "||" + nacimiento + "|" + genero + "||||||OPOS|||||||||||||||||||||" + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum = ASTMCheckSum(data)
 	fullData = string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -306,12 +309,12 @@ func inactiveSample(conn net.Conn, p *hostQueryData, nacimiento string, fechaOT 
 	conn.Write([]byte{0x04})
 }
 
-func validMessage(db *sql.DB, conn net.Conn){
+func validMessage(db *sql.DB, conn net.Conn) {
 	t := time.Now()
 	soapMessage := "En la orden de trabajo " + check + " se esta tratando de Programar un Examen que NO esta ACTIVO :C210 Equipo: 071\n" +
 		"No se Programaran los Examenes hasta que no se activen las Muestras.\n" +
 		"Se deben revisar todos los Examenes que esten pendientes.\n" +
-		"Fecha y Hora: "+ t.Format("2006-01-02 15:04:05") + "\n" +
+		"Fecha y Hora: " + t.Format("2006-01-02 15:04:05") + "\n" +
 		"Equipo: 071 SYSMEX UN-2000"
 	for _, p := range data {
 		//qu ery
@@ -323,9 +326,9 @@ func validMessage(db *sql.DB, conn net.Conn){
 		nacimiento := strings.Replace(p.FechaNacimiento, "-", "", -1)
 		fechaOT := strings.Replace(p.FechaOT, "-", "", -1)
 		horaOT := strings.Replace(p.HoraOT, ":", "", -1)
-		if horaOT == "000000"{
+		if horaOT == "000000" {
 			inactiveSample(conn, p, nacimiento, fechaOT, horaOT)
-			soapCrearReto(db ,check, soapMessage)
+			soapCrearReto(db, check, soapMessage)
 			soapAlerta(check)
 		} else {
 			activeSample(conn, p, nacimiento, fechaOT, horaOT)
@@ -334,10 +337,10 @@ func validMessage(db *sql.DB, conn net.Conn){
 	}
 }
 
-func invalidMessage(conn net.Conn){
+func invalidMessage(conn net.Conn) {
 	t := time.Now()
 	//******HEADER**********
-	data := "1H|\\^&|||LIS||||||||LIS2-A2|"+ t.Format("20060102150405")+ string(CR) + string(ETXs)
+	data := "1H|\\^&|||LIS||||||||LIS2-A2|" + t.Format("20060102150405") + string(CR) + string(ETXs)
 	//fmt.Println(data)
 	CheckSum := ASTMCheckSum(data)
 	fullData := string(STX) + data + CheckSum + string(CR) + string(LF)
@@ -395,21 +398,20 @@ func invalidMessage(conn net.Conn){
 	conn.Write([]byte{0x04})
 }
 
-func soapAlerta(numot string){
+func soapAlerta(numot string) {
 	cli := soap.Client{
-		URL: soapURL,
+		URL:       soapURL,
 		Namespace: hello.Namespace,
 	}
 	conn := hello.NewServiciosWebRPC(&cli)
-	conn.WsAlertaMuestrasInactivas(numot,"071","C210")
+	conn.WsAlertaMuestrasInactivas(numot, "071", "C210")
 }
-func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
+func soapCrearReto(db *sql.DB, numot string, soapMessage string) {
 	t := time.Now()
 	getDate := t.Format("2006-01-02")
 	getTime := t.Format("15:04:05")
 	dates := string(getDate)
 	times := string(getTime)
-
 
 	rows, err := db.Query("SELECT Hora FROM CalidadEnServicio where Orden = ? and fecha = ? order by Hora desc LIMIT 1", check, dates)
 	if err != nil {
@@ -418,8 +420,8 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 	for rows.Next() { // Almacena resultado del query en estructura revisado y liberado
 		c := new(caseQueryData)
 		err := rows.Scan(
-			&c.hora,)
-		caseData = append( caseData, c)
+			&c.hora)
+		caseData = append(caseData, c)
 		if err != nil {
 			log.Fatal(err) // Manejo de errores
 		}
@@ -445,7 +447,7 @@ func soapCrearReto(db *sql.DB ,numot string, soapMessage string){
 		if timesCompareFormat.After(caseDateFormat) {
 			fmt.Println("ya paso media hora")
 			cli := soap.Client{
-				URL:      soapURL,
+				URL:       soapURL,
 				Namespace: hello.Namespace,
 			}
 			conn := hello.NewServiciosWebRPC(&cli)
@@ -486,11 +488,11 @@ func main() {
 	// String conexion MySQL
 	dbConn := dbUser + ":" + dbPassword + "@tcp(" + dbAddress + ":" + dbPort + ")/" + dbDatabase
 
-	ln, _ := net.Listen("tcp", ":"+ tcpPort)
+	ln, _ := net.Listen("tcp", ":"+tcpPort)
 
 Retry:
 
-// Acepta condiciento en puerto indicado
+	// Acepta condiciento en puerto indicado
 	conn, err := ln.Accept()
 	fmt.Println(conn.RemoteAddr().String())
 	if err != nil {
@@ -499,7 +501,7 @@ Retry:
 
 	db, err := sql.Open("mysql", dbConn)
 	if err != nil {
-		log.Println("error db") // Manejo de errores
+		log.Println("error db")          // Manejo de errores
 		c := time.Tick(10 * time.Second) // Reconexion TCP
 		for now := range c {
 			log.Println(now)
@@ -511,14 +513,13 @@ Retry:
 
 	// Open no abre una conexion. Validar datos DSN:
 	if err := db.Ping(); err != nil {
-		log.Println("error db", err) // mensaje error
+		log.Println("error db", err)     // mensaje error
 		c := time.Tick(10 * time.Second) // Reconexion TCP
 		for now := range c {
 			log.Println(now)
 			goto Retry
 		}
 	}
-
 
 	log.Println(err)
 	if err != nil {
@@ -543,14 +544,14 @@ Retry:
 		} else {
 			fmt.Print("ENQ:\n")
 			time.Sleep(300 * time.Millisecond)
-			_ , err = conn.Write([]byte{0x06})
+			_, err = conn.Write([]byte{0x06})
 			fmt.Print("ACK sent: ", err)
 			for {
 				// H Q L
 				message, err = bufio.NewReader(conn).ReadString('\r')
 				if err != nil {
 					log.Println("desconectado") // Manejo de errores
-					break // Sale del loop si se desconecta el cliente
+					break                       // Sale del loop si se desconecta el cliente
 				} else {
 					OT, Q, L, response, err = verifyQuery(message)
 				}
@@ -570,7 +571,7 @@ Retry:
 					message, err = bufio.NewReader(conn).ReadString(EOT)
 					if err != nil {
 						log.Println("desconectado") // Manejo de errores
-						break // Sale del loop si se desconecta el cliente
+						break                       // Sale del loop si se desconecta el cliente
 					} else {
 						fmt.Println("Fin mensaje")
 						time.Sleep(300 * time.Millisecond)
@@ -592,16 +593,41 @@ Retry:
 			if check == "" {
 				// crear examen sin OT
 			} else { // OT existe
-				err = hostQueryDB(db, check)
+				p, err := hostQueryDB(db, check)
 				if err != nil {
 					log.Println(err)
 				}
+				if p != nil {
+					data = append(data, p)
+				}
+				results, err := db.Query("SELECT NumOT,PendienteNumOT FROM OT WHERE PendienteNumOT=?", check)
+				if err != nil {
+					log.Println(err, "segundo error") // proper error handling instead of panic in your app
+				}
+
+				for results.Next() {
+					var ot Orden
+					err = results.Scan(&ot.NumOT, &ot.PendienteNumOT)
+					if err != nil {
+						log.Println(err, "Error scan")
+					}
+
+					a, err := hostQueryDB(db, ot.NumOT)
+					if err != nil {
+						log.Println(err, "cuarto error")
+					}
+
+					if a != nil {
+						data = append(data, a)
+					}
+				}
+
 				if len(data) == 0 {
 					t := time.Now()
 					soapMessage := "En la orden de trabajo " + check + " se esta tratando de Realizar un Examen que NO esta PROGRAMADO: C210 Equipo: 071\n" +
 						"No se Programaran los Examenes hasta que no se verifique el Examen A Practicar.\n" +
 						"Se deben revisar que la orden de trabajo tenga un examen: C210 programado.\n" +
-						"Fecha y Hora: "+ t.Format("2006-01-02 15:04:05") + "\n" +
+						"Fecha y Hora: " + t.Format("2006-01-02 15:04:05") + "\n" +
 						"Equipo: 071 SYSMEX UN-2000"
 					invalidMessage(conn)
 					soapCrearReto(db, check, soapMessage)
@@ -617,5 +643,5 @@ Retry:
 
 	}
 	conn.Close() // Cierra conexion TCP
-	goto Retry // Reinicia la conexion TCP
+	goto Retry   // Reinicia la conexion TCP
 }

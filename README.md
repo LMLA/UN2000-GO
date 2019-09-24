@@ -23,13 +23,18 @@ DB_PASSWORD : LavAmerikx09
 TCP_ADDRESS : localhost
 TCP_PORT    : 10002
 TCP_PORT_SERVER : 10001
-FTP_ADDRESS : 131.1.18.12
+FTP_ADDRESS : 131.1.18.111
 SOAP_URL    : http://131.1.18.106:8081/4DSOAP
-FTP_PATH    : iib/071/
+FTP_PATH    : /home/conlab97/Ftp/iib/071/
 FTP_USER    : conlab97
-FTP_PASSWORD : lab3000
+FTP_PASSWORD : lab3000                 
 ```
-  
+
+## Compilación
+
+Para LINUX : env GOOS=linux GOARCH=amd64 go build main.go
+Para Mac OS: env GOOS=darwin GOARCH=amd64 go build main.go
+
 ## Instalación
 
 1. Configurar archivo .env.
